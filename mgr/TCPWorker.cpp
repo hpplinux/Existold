@@ -17,10 +17,9 @@ TCPWorker::TCPWorker(char *ip, unsigned short port, Console *pConsole)
 	m_msgBuffer = new unsigned char[MAX_MSG_SIZE];
 	if ( NULL == m_msgBuffer ) return;
 	SetAverageConnectCount(10);
-	SetReconnectTime(5);
 	m_guideIP = ip;
 	m_guidePort = port;
-	Connect( m_guideIP.c_str(), m_guidePort );
+	Connect( m_guideIP.c_str(), m_guidePort, 5 );
 }
 
 TCPWorker::~TCPWorker()

@@ -16,6 +16,15 @@ unsigned int *g_hash = NULL;
 unsigned int *g_key = NULL;
 unsigned short *g_keySize = NULL;
 
+#ifdef WIN32
+#ifdef _DEBUG
+#pragma comment ( lib, "../Micro-Development-Kit/lib/mdk_d.lib" )
+#else
+#pragma comment ( lib, "../Micro-Development-Kit/lib/mdk.lib" )
+#endif
+#endif
+
+
 #define DATA_COUNT 200000
 typedef struct THREAD_CONTROL
 {
