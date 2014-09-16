@@ -2,8 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="Exist"
-	ProjectGUID="{44A178A6-97BF-4D72-92C6-4236F7138A6D}"
+	Name="test"
+	ProjectGUID="{FAEEE9E7-3958-4BD0-B7ED-9161CDEA1C91}"
 	TargetFrameworkVersion="0"
 	>
 	<Platforms>
@@ -16,8 +16,8 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\bin"
-			IntermediateDirectory=".\output/Release"
+			OutputDirectory=".\Release"
+			IntermediateDirectory=".\Release"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -38,7 +38,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\bin/Exist.tlb"
+				TypeLibraryName=".\Release/test.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -46,14 +46,14 @@
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\bstruct\include;&quot;..\Micro-Development-Kit\include&quot;"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;EXIST_DEVICE"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
-				PrecompiledHeaderFile=".\output/Release/Exist.pch"
-				AssemblerListingLocation=".\output/Release/"
-				ObjectFile=".\output/Release/"
-				ProgramDataBaseFileName=".\output/Release/"
+				PrecompiledHeaderFile=".\Release/test.pch"
+				AssemblerListingLocation=".\Release/"
+				ObjectFile=".\Release/"
+				ProgramDataBaseFileName=".\Release/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 			/>
@@ -70,11 +70,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile=".\bin/Exist.exe"
+				OutputFile=".\Release/test.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="..\bstruct\lib;&quot;..\Micro-Development-Kit\lib&quot;"
-				ProgramDatabaseFile=".\bin/Exist.pdb"
+				ProgramDatabaseFile=".\Release/test.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -92,7 +92,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\bin/Exist.bsc"
+				OutputFile=".\Release/test.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -106,8 +106,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\bin"
-			IntermediateDirectory=".\output/Debug"
+			OutputDirectory=".\Debug"
+			IntermediateDirectory=".\Debug"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -128,21 +128,21 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\bin/Exist.tlb"
+				TypeLibraryName=".\Debug/test.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\bstruct\include;&quot;..\Micro-Development-Kit\include&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;EXIST_DEVICE"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
-				PrecompiledHeaderFile=".\output/Debug/Exist.pch"
-				AssemblerListingLocation=".\output/Debug/"
-				ObjectFile=".\output/Debug/"
-				ProgramDataBaseFileName=".\output/Debug/"
+				PrecompiledHeaderFile=".\Debug/test.pch"
+				AssemblerListingLocation=".\Debug/"
+				ObjectFile=".\Debug/"
+				ProgramDataBaseFileName=".\Debug/"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -161,12 +161,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile=".\bin/Exist.exe"
+				OutputFile=".\Debug/test.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="..\bstruct\lib;&quot;..\Micro-Development-Kit\lib&quot;"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\bin/Exist.pdb"
+				ProgramDatabaseFile=".\Debug/test.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -184,7 +184,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\bin/Exist.bsc"
+				OutputFile=".\Debug/test.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -201,10 +201,10 @@
 	</References>
 	<Files>
 		<Filter
-			Name="main"
+			Name="Source"
 			>
 			<File
-				RelativePath="Exist.cpp"
+				RelativePath="source\Int8.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -223,62 +223,98 @@
 					/>
 				</FileConfiguration>
 			</File>
-			<File
-				RelativePath="Exist.h"
+			<Filter
+				Name="frame No. 1"
 				>
-			</File>
-			<File
-				RelativePath="makefile"
-				>
-			</File>
-			<File
-				RelativePath="NoDB.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
+				<File
+					RelativePath="source\frame\ConnectPool.cpp"
 					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="source\frame\IOBus.cpp"
 					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+			</Filter>
+		</Filter>
+		<Filter
+			Name="include"
+			>
 			<File
-				RelativePath="NoDB.h"
+				RelativePath="include\Int8.h"
 				>
 			</File>
 			<File
-				RelativePath="RHTable.cpp"
+				RelativePath="include\Map.h"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="RHTable.h"
+				RelativePath="include\Vector.h"
 				>
 			</File>
+			<Filter
+				Name="Frame"
+				>
+				<File
+					RelativePath="include\frame\ConnectPool.h"
+					>
+				</File>
+				<File
+					RelativePath="include\frame\Container.h"
+					>
+				</File>
+				<File
+					RelativePath="include\frame\Element.h"
+					>
+				</File>
+				<File
+					RelativePath="include\frame\IOBus.h"
+					>
+				</File>
+				<File
+					RelativePath="include\frame\Key.h"
+					>
+				</File>
+				<File
+					RelativePath="include\frame\KVData.h"
+					>
+				</File>
+				<File
+					RelativePath="include\frame\Value.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="common"
@@ -332,7 +368,51 @@
 				>
 			</File>
 			<File
-				RelativePath="bin\Exist-SSD.cfg"
+				RelativePath="..\common\Console.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\common\Console.h"
+				>
+			</File>
+			<File
+				RelativePath="..\common\MD5Helper.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\common\MD5Helper.h"
 				>
 			</File>
 			<File
@@ -361,8 +441,32 @@
 			</File>
 		</Filter>
 		<File
-			RelativePath="bin\Exist-Exist.cfg"
+			RelativePath="Debug\Exist-CPU.cfg"
 			>
+		</File>
+		<File
+			RelativePath="makefile"
+			>
+		</File>
+		<File
+			RelativePath="test.cpp"
+			>
+			<FileConfiguration
+				Name="Release|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					PreprocessorDefinitions=""
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					PreprocessorDefinitions=""
+				/>
+			</FileConfiguration>
 		</File>
 	</Files>
 	<Globals>
