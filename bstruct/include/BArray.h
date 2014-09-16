@@ -43,9 +43,11 @@
  *	string str = msg[1];//取得192.168.0.1
  *	short port = msg[2];//取得8888
 */
+
+
 namespace bsp
 {
-
+	
 class BArray;
 class BStruct;
 /*
@@ -53,6 +55,7 @@ class BStruct;
  */
 struct E_VALUE
 {
+	int m_index;//成员在数组中位置
 	char *m_data;//成员的值的地址，对于struct，byte流等对象就是对象地址
 	unsigned short m_size;//成员长度，对于struct，byte流等对象就是对象大小
 public:
@@ -92,16 +95,16 @@ public:
 	bool operator = ( float value );
 	operator double();
 	bool operator = ( double value );
-	operator long();
-	operator unsigned long()
-	{
-		return (long)*this;
-	}
-	bool operator = ( long value );
-	bool operator = ( unsigned long value )
-	{
-		return *this = (long)value;
-	}
+//	operator long();
+//	operator unsigned long()
+//	{
+//		return (long)*this;
+//	}
+//	bool operator = ( long value );
+//	bool operator = ( unsigned long value )
+//	{
+//		return *this = (long)value;
+//	}
 	operator int32();
 	operator uint32()
 	{
@@ -143,11 +146,14 @@ private:
 		read = 2
 	};
 	friend struct E_VALUE;
-public:
+public: 
 	BArray();
+	BArray( const char *name );
 	virtual ~BArray();
 
 public:
+	void SetName( const char* name );
+	const char* Name();
 	/*
 		设置元素长度，不设置默认为变长元素，设置了为定长元素
 		※必须在Bind()前调用，Bind()会将该信息编码进入流中，Bind()再设置就无效了
@@ -205,6 +211,7 @@ public:
 private:
 	bool Resolve();//解析绑定的数据流
 private:
+	char m_name[256];
 	Stream m_stream;
 	std::vector<char*> m_data;
 	E_VALUE m_error;//操作失败时返回错误数据

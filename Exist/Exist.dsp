@@ -39,9 +39,10 @@ RSC=rc.exe
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "bin"
 # PROP Intermediate_Dir "output/Release"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /D "HARDDISK_DEVICE" /YX /FD /c
 # ADD BASE RSC /l 0x804 /d "NDEBUG"
 # ADD RSC /l 0x804 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -66,7 +67,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "EXIST_DEVICE" /FR /YX /FD /GZ /c
 # ADD BASE RSC /l 0x804 /d "_DEBUG"
 # ADD RSC /l 0x804 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -88,14 +89,6 @@ LINK32=link.exe
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\common\common.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\common\common.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\Exist.cpp
 # End Source File
 # Begin Source File
@@ -108,27 +101,11 @@ SOURCE=.\makefile
 # End Source File
 # Begin Source File
 
-SOURCE=.\md5.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\md5.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\NoDB.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\NoDB.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\common\Protocol.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\common\Protocol.h
 # End Source File
 # Begin Source File
 
@@ -139,9 +116,41 @@ SOURCE=.\RHTable.cpp
 SOURCE=.\RHTable.h
 # End Source File
 # End Group
+# Begin Group "common"
+
+# PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\bin\exist.cfg
+SOURCE=..\common\BStructSvr.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\BStructSvr.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\common.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\common.h
+# End Source File
+# Begin Source File
+
+SOURCE=".\bin\Exist-SSD.cfg"
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\Protocol.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\Protocol.h
+# End Source File
+# End Group
+# Begin Source File
+
+SOURCE=".\bin\Exist-Exist.cfg"
 # End Source File
 # End Target
 # End Project

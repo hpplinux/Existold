@@ -14,15 +14,25 @@
 //external in stored
 int main( int argc, char** argv )
 {
-	if ( 1 >= argc )
+	char exeDir[256];
+	int size = 256;
+	mdk::GetExeDir( exeDir, size );//取得可执行程序位置
+	exeDir[size] = 0;
+	char configFile[256];
+#ifdef EXIST_DEVICE
+	sprintf( configFile, "%s/Exist-Exist.cfg", exeDir );
+#else
+	sprintf( configFile, "%s/Exist-SSD.cfg", exeDir );
+#endif
+
+	NoDB ser( configFile );
+	const char *ret = ser.Start();
+	if ( NULL != ret )
 	{
-		printf( "please set config file start like this [exist exist.cfg]\n" );
+		ser.GetLog().Info( "info:","激活外存条失败:%s", ret );
 		return 0;
 	}
-	NoDB db( argv[1] );
-	printf( "Exist启动\n" );
-	db.Start();
-	db.WaitStop();
-	printf( "Exist退出\n" );
+	ser.WaitStop();
+	ser.GetLog().Info("info:", "外存条已从主板上拔出" );
 	return 0;
 }

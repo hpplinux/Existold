@@ -4,6 +4,7 @@
 
 #include "Console.h"
 #include <cstring>
+#include <cstdio>
 using namespace std;
 
 void split( vector<string> &des, const char *str,char *spliter )
