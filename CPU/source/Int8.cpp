@@ -2,7 +2,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "../include/Int8.h"
+#include "../../include/Exist/Int8.h"
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -11,24 +11,24 @@ namespace Exist
 {
 
 Int8::Int8()
-:Value<char>()
+:Value<mdk::int8>()
 {
-	m_type = DataType::Int8;
+	m_type = DataType::int8;
 	IOBus::CreateExistObj( this, m_type );
-	m_elementType = DataType::data;
 }
 
 Int8::Int8( const char *name )
-:Value<char>(name)
+:Value<mdk::int8>(name, false)
 {
-	m_type = DataType::Int8;
+	m_type = DataType::int8;
 	IOBus::CreateExistObj( this, m_type );
-	m_elementType = DataType::data;
+	CreateData();
 }
 
 Int8::Int8( const Int8 &value )
-:Value<char>(value)
+:Value<mdk::int8>(value)
 {
+	m_type = DataType::int8;
 	IOBus::CreateExistObj( this, m_type );
 }
 
@@ -42,10 +42,100 @@ Int8::~Int8()
 {
 }
 
-Int8& Int8::operator=(const char& right)
+Int8& Int8::operator=(const mdk::int8 right)
 {
 	m_data = right;
 	return *this;
 }
 	
+Int8& Int8::operator+=(const mdk::int8 right)
+{
+	m_data += right;
+	return *this;
+}
+
+Int8& Int8::operator-=(const mdk::int8 right)
+{
+	m_data -= right;
+	return *this;
+}
+
+Int8& Int8::operator*=(const mdk::int8 right)
+{
+	m_data *= right;
+	return *this;
+}
+
+Int8& Int8::operator/=(const mdk::int8 right)
+{
+	m_data /= right;
+	return *this;
+}
+
+}
+namespace SSD
+{
+
+	Int8::Int8()
+		:Exist::Value<mdk::int8>()
+	{
+		m_type = DataType::int8;
+		Exist::IOBus::CreateExistObj( this, m_type );
+	}
+
+	Int8::Int8( const char *name )
+		:Exist::Value<mdk::int8>(name, true)
+	{
+		m_type = DataType::int8;
+		Exist::IOBus::CreateExistObj( this, m_type );
+		CreateData();
+	}
+
+	Int8::Int8( const Int8 &value )
+		:Exist::Value<mdk::int8>(value)
+	{
+		m_type = DataType::int8;
+		Exist::IOBus::CreateExistObj( this, m_type );
+	}
+
+	Int8& Int8::operator=( const Int8 &right )
+	{
+		Copy(right);
+		return *this;
+	}
+
+	Int8::~Int8()
+	{
+	}
+
+	Int8& Int8::operator=(const mdk::int8 right)
+	{
+		m_data = right;
+		return *this;
+	}
+
+	Int8& Int8::operator+=(const mdk::int8 right)
+	{
+		m_data += right;
+		return *this;
+	}
+
+	Int8& Int8::operator-=(const mdk::int8 right)
+	{
+		m_data -= right;
+		return *this;
+	}
+
+	Int8& Int8::operator*=(const mdk::int8 right)
+	{
+		m_data *= right;
+		return *this;
+	}
+
+	Int8& Int8::operator/=(const mdk::int8 right)
+	{
+		m_data /= right;
+		return *this;
+	}
+
 }

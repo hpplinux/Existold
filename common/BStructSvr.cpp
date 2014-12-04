@@ -3,7 +3,9 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "BStructSvr.h"
-#include "Protocol.h"
+#include <cstdio>
+#include "common.h"
+
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -34,47 +36,36 @@ BStructSvr::~BStructSvr()
 void BStructSvr::OnMsg(mdk::STNetHost &host)
 {
 	//////////////////////////////////////////////////////////////////////////
-	//接收BStruct协议格式的报文
-	bsp::BStruct msg;
-	if ( !host.Recv(m_iBuffer, MSG_HEAD_SIZE, false) ) return;
-	unsigned int len = bsp::memtoi(&m_iBuffer[0], sizeof(unsigned short));
-	if ( len > MAX_BSTRUCT_SIZE ) 
+	//接收报文
+	MSG_HEADER header;
+	if ( !host.Recv((unsigned char*)&header, MSG_HEAD_SIZE, false) ) return;
+	if ( header.msgSize > MAX_DATA_SIZE ) 
 	{
 		host.Recv( m_iBuffer, MSG_HEAD_SIZE );
 		OnInvalidMsg(host, outBufSize, m_iBuffer, MSG_HEAD_SIZE);
 		return;
 	}
-	if ( !host.Recv(m_iBuffer, len + MSG_HEAD_SIZE) ) return;
-	if ( !msg.Resolve(&m_iBuffer[MSG_HEAD_SIZE], len) ) //解析报文
-	{
-		OnInvalidMsg(host, resolveUnable, m_iBuffer, len + MSG_HEAD_SIZE);
-		return;
-	}
+	if ( !host.Recv(m_iBuffer, header.msgSize + MSG_HEAD_SIZE) ) return;
 
-	//////////////////////////////////////////////////////////////////////////
-	//处理报文
-	if ( !msg["MsgId"].IsValid() || sizeof(unsigned short) != msg["MsgId"].m_size ) //检查有无msgid字段
-	{
-		OnInvalidMsg(host, noMsgId, m_iBuffer, len + MSG_HEAD_SIZE);
-		return;
-	}
-
-	OnWork( host, msg );
+	OnWork( host, &header, &m_iBuffer[MSG_HEAD_SIZE] );
 }
 
 void BStructSvr::OnInvalidMsg(mdk::STNetHost &host, ErrorType type, unsigned char *msg, unsigned short len)
 {
+	printf( "非法报文::Close()\n" );
 	host.Close();
 }
 
-bsp::BStruct& BStructSvr::GetStruct()
+unsigned char* BStructSvr::GetDataBuffer()
 {
-	m_struct.Bind( &m_oBuffer[MSG_HEAD_SIZE], MAX_BSTRUCT_SIZE );
-	return m_struct;
+	return &m_oBuffer[MSG_HEAD_SIZE];
 }
 
-void BStructSvr::SendBStruct( mdk::STNetHost &host )
+void BStructSvr::SendMsg( mdk::STNetHost &host, MsgId::MsgId msgId, short size )
 {
-	bsp::itomem( m_oBuffer, m_struct.GetSize(), MSG_HEAD_SIZE );
-	host.Send( m_oBuffer, MSG_HEAD_SIZE + m_struct.GetSize() );
+	if ( -1 == host.ID() ) return;
+	MSG_HEADER *header = (MSG_HEADER *)m_oBuffer;
+	header->msgId = (unsigned short)msgId;
+	header->msgSize = size;
+	host.Send( m_oBuffer, MSG_HEAD_SIZE + size );
 }

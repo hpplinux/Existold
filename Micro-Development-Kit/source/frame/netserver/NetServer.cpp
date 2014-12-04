@@ -30,6 +30,15 @@ void* NetServer::TMain(void* pParam)
 	return 0;
 }
 
+void NetServer::SetOnWorkStart( MethodPointer method, void *pObj, void *pParam )
+{
+	m_pNetCard->SetOnWorkStart(method, pObj, pParam);
+}
+
+void NetServer::SetOnWorkStart( FuntionPointer fun, void *pParam )
+{
+	m_pNetCard->SetOnWorkStart(fun, pParam);
+}
 /**
  * 客户接口，对所有可见
  * 运行服务器
@@ -115,17 +124,23 @@ void NetServer::BroadcastMsg( int *recvGroupIDs, int recvCount, char *msg, unsig
 }
 
 //向某主机发送消息
-void NetServer::SendMsg( int hostID, char *msg, unsigned int msgsize )
+bool NetServer::SendMsg( int64 hostID, char *msg, unsigned int msgsize )
 {
-	m_pNetCard->SendMsg(hostID, msg, msgsize);
+	return m_pNetCard->SendMsg(hostID, msg, msgsize);
 }
 
 /*
 	关闭与主机的连接
  */
-void NetServer::CloseConnect( int hostID )
+void NetServer::CloseConnect( int64 hostID )
 {
 	m_pNetCard->CloseConnect( hostID );
+}
+
+//打开TCP_NODELAY
+void NetServer::OpenNoDelay()
+{
+	m_pNetCard->OpenNoDelay();
 }
 
 }  // namespace mdk

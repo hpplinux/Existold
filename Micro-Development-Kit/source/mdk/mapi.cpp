@@ -211,7 +211,7 @@ SYS_gettid与__NR_gettid是相等的常量
 #define gettid() syscall(__NR_gettid)
 #endif
 
-unsigned int CurThreadId()
+uint64 CurThreadId()
 {
 #ifdef WIN32
 	return GetCurrentThreadId();
@@ -271,6 +271,19 @@ bool GetExeDir( char *exeDir, int size )
 	exeDir[size] = '\0';
 #endif
 	return true;
+}
+
+mdk::uint64 MillTime()
+{
+#ifdef WIN32
+	return GetTickCount();
+#else
+	struct timespec ts;
+
+	clock_gettime(CLOCK_REALTIME, &ts);
+
+	return (ts.tv_sec * 1000 + ts.tv_nsec / 1000000);
+#endif
 }
 
 }

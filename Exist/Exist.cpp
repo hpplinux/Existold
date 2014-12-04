@@ -4,12 +4,13 @@
 #ifdef WIN32
 #ifdef _DEBUG
 #pragma comment ( lib, "../Micro-Development-Kit/lib/mdk_d.lib" )
-#pragma comment ( lib, "../bstruct/lib/bstruct_d.lib" )
 #else
 #pragma comment ( lib, "../Micro-Development-Kit/lib/mdk.lib" )
-#pragma comment ( lib, "../bstruct/lib/bstruct.lib" )
 #endif
 #endif
+#include "../common/ExistFS.h"
+#include "../common/common.h"
+#include "mdk/Socket.h"
 
 //external in stored
 int main( int argc, char** argv )
@@ -17,14 +18,13 @@ int main( int argc, char** argv )
 	char exeDir[256];
 	int size = 256;
 	mdk::GetExeDir( exeDir, size );//取得可执行程序位置
-	exeDir[size] = 0;
 	char configFile[256];
 #ifdef EXIST_DEVICE
-	sprintf( configFile, "%s/Exist-Exist.cfg", exeDir );
-#else
-	sprintf( configFile, "%s/Exist-SSD.cfg", exeDir );
+	sprintf( configFile, "%s/../conf/Exist.cfg", exeDir );
 #endif
-
+#ifdef SSD_DEVICE
+	sprintf( configFile, "%s/../conf/SolidStateDrive.cfg", exeDir );
+#endif
 	NoDB ser( configFile );
 	const char *ret = ser.Start();
 	if ( NULL != ret )

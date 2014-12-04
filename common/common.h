@@ -1,8 +1,14 @@
 #ifndef COMMOND_H
 #define COMMOND_H
 
-#include "../Micro-Development-Kit/include/frame/netserver/STNetServer.h"
-#include "BStruct.h"
+#include "frame/netserver/STNetServer.h"
+#include "Protocol.h"
+
+#ifdef WIN32
+#include "windows.h"
+#else
+mdk::uint64 GetTickCount();
+#endif
 
 //设备
 namespace Device
@@ -48,15 +54,15 @@ namespace Device
 		unsigned int lanPort;//内网服务端口
 	}INFO;
 
-	char* Descript( Device::Type::Type type );
-	char* Descript( Device::Status::Status status );
+	const char* Descript( Device::Type::Type type );
+	const char* Descript( Device::Status::Status status );
 }
 
 namespace Exist
 {
-
-void SendBStruct( mdk::Socket &sock, bsp::BStruct &msg );
-int Recv( mdk::Socket &sender, bsp::BStruct &msg, unsigned char *buf );
-
+	unsigned char* GetDataBuffer( unsigned char *msg );
+	void SendMsg( mdk::Socket &recver, short msgId, unsigned char *data, short size );
+	int Recv( mdk::Socket &sender, MSG_HEADER &header, unsigned char *buf );
 }
+
 #endif //COMMOND_H

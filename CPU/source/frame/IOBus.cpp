@@ -2,23 +2,15 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "../../include/frame/IOBus.h"
-#include "../../include/frame/ConnectPool.h"
+#include "../../../include/Exist/frame/IOBus.h"
+#include "../../../include/Exist/frame/ConnectPool.h"
 #include "mdk/atom.h"
 #include <cstring>
 #include <cstdio>
+#include "../../../common/MD5Helper.h"
+#include "../../../common/Protocol.h"
+#include "../../../common/common.h"
 
-#ifdef WIN32
-
-#ifdef _DEBUG
-#pragma comment ( lib, "mdk_d.lib" )
-#pragma comment ( lib, "bstruct_d.lib" )
-#else
-#pragma comment ( lib, "mdk.lib" )
-#pragma comment ( lib, "bstruct.lib" )
-#endif
-
-#endif
 
 namespace Exist
 {
@@ -52,64 +44,51 @@ void IOBus::ReleaseExistObj( void *pObj )
 DataType::DataType IOBus::GetDataType( void *pObj )
 {
 	std::map<void*, int>::iterator it = s_memoryMap.find(pObj);
-	if ( s_memoryMap.end() == it ) return DataType::data;
+	if ( s_memoryMap.end() == it ) return DataType::uninit;
 	IOBus *pContainer = (IOBus*)pObj;
-	if ( DataType::data > pContainer->Type() || DataType::Int8 < pContainer->Type() ) 
-	{
-		return DataType::data;
-	}
-	else 
-	{
-		return pContainer->Type();
-	}
+	return pContainer->Type();
 }
 
 IOBus::IOBus()
 {
-	m_refCount = NULL;
 	m_type = DataType::uninit;			//自身类型，给GetDataType()
+	m_size = 0;
 	m_elementType = DataType::uninit;	//元素类型，通过GetDataType()得用到
 	m_keySize = 0;
 	m_key[m_keySize] = 0;
 	m_hash = 820125;
+	m_protracted = false;
 }
 
-IOBus::IOBus( const char *name )
+IOBus::IOBus( const char *name, bool protracted )
 {
-	m_refCount = NULL;
 	int size = strlen(name);
 	if ( MAX_KEY_SIZE < size )
 	{
 		int *bug = NULL;
 		*bug = 1;
 	}
-	Init(name, size);
-	CreateData( m_hash, m_key, m_keySize );
+	m_size = 0;
+	Init(name, size, protracted);
 }
 
-void IOBus::Init( const char *name, int keySize )
+void IOBus::Init( const char *name, int keySize, bool protracted )
 {
-	m_refCount = new int;
-	*m_refCount = 1;
+	m_protracted = protracted;
 	m_keySize = keySize;
 	memcpy( m_key, name, m_keySize );
 	m_key[m_keySize] = 0;
-	m_hash = 0;
+	MD5Helper md5h;
+	m_hash = md5h.HashValue(m_key,m_keySize);
 }
 
-void IOBus::Release()
+void IOBus::DeleteData()
 {
-	if ( NULL == m_refCount ) return;
-	
-	if ( 1 == mdk::AtomDec( m_refCount, 1 ) )//引用计数减少,最后一个引用，通知Exist释放数据
-	{
-		DeleteData( m_hash, m_key, m_keySize );
-	}
+	DeleteData( m_hash, m_key, m_keySize );
 }
 
 IOBus::IOBus( const IOBus &container )
 {
-	m_refCount = NULL;
 	Copy(container);
 }
 
@@ -121,13 +100,9 @@ IOBus& IOBus::operator=( const IOBus &right )
 
 void IOBus::Copy( const IOBus &right )
 {
-	Release();
-	if ( NULL != right.m_refCount )
-	{
-		mdk::AtomAdd(right.m_refCount, 1);//引用计数增加
-	}
-	m_refCount = right.m_refCount;
+	m_protracted = right.m_protracted;
 	m_type = right.m_type;			//自身类型，给GetElementType()用
+	m_size = right.m_size;
 	m_elementType = right.m_elementType;	//元素类型，通过GetElementType()得到
 	m_elementKeyType = right.m_elementKeyType;
 	m_keySize = right.m_keySize;
@@ -139,7 +114,11 @@ void IOBus::Copy( const IOBus &right )
 IOBus::~IOBus()
 {
 	s_memoryMap.erase( this );
-	Release();
+}
+
+bool IOBus::IsProtracted()
+{
+	return m_protracted;
 }
 
 DataType::DataType IOBus::Type()
@@ -165,7 +144,8 @@ int IOBus::KeySize()
 void IOBus::ElementRealKey( const void* localKey, const int &localKeySize, char *globalkey, int &globalkeySize )
 {
 	globalkeySize = 0;
-	if ( DataType::data == m_elementKeyType )
+	if ( DataType::IsValue(m_elementKeyType) 
+		|| DataType::stream == m_elementKeyType )
 	{
 		memcpy( &globalkey[globalkeySize], Key(), KeySize() );
 		globalkeySize += KeySize();
@@ -188,25 +168,172 @@ void IOBus::ElementRealKey( const void* localKey, const int &localKeySize, char 
 	}
 }
 
-bool IOBus::CreateData( unsigned int hash, char *key, int keySize )
+bool IOBus::CreateData()
 {	
-	printf( "IOBus::CreateData(%d, %s, %d)\n", hash, key, keySize );
-	mdk::Socket &cpu = IOBus::s_connectPool.GetSocket( hash );
+	mdk::Socket &cpu = IOBus::s_connectPool.GetSocket( m_hash );
+	char msg[1024];
+	MSG_HEADER *pHeader = (MSG_HEADER*)msg;
+	CREATE_DATA *pParam = (CREATE_DATA*)&msg[sizeof(MSG_HEADER)];
+	pHeader->msgId = MsgId::createData;
+	pHeader->msgSize = sizeof(CREATE_DATA);
+	pParam->key.hashid = m_hash;
+	pParam->key.keySize = m_keySize;
+	memcpy(pParam->key.key, m_key, pParam->key.keySize);
+	pParam->key.type = m_type;
+	pParam->key.elementType = m_elementType;
+	pParam->size = m_size;
+	pParam->protracted = m_protracted;
+	if ( 0 > cpu.Send(msg, sizeof(MSG_HEADER) + pHeader->msgSize) )
+	{
+		cpu.Close();
+		return false;
+	}
 
 	return true;
 }
 
 bool IOBus::DeleteData( unsigned int hash, char *key, int keySize )
 {
-	printf( "IOBus::DeleteData(%d, %s, %d)\n", hash, key, keySize );
+	//删除功能，请期待
+	return false;
+
 	mdk::Socket &cpu = IOBus::s_connectPool.GetSocket( hash );
+	char msg[1024];
+	MSG_HEADER *pHeader = (MSG_HEADER*)msg;
+	exist::DATA_KEY *pParam = (exist::DATA_KEY*)&msg[sizeof(MSG_HEADER)];
+	pHeader->msgId = MsgId::deleteData;
+	pHeader->msgSize = sizeof(exist::DATA_KEY);
+	pParam->hashid = m_hash;
+	pParam->keySize = m_keySize;
+	pParam->type = m_type;
+	memcpy(pParam->key, m_key, pParam->keySize);
+	if ( 0 > cpu.Send(msg, sizeof(MSG_HEADER) + pHeader->msgSize) )
+	{
+		cpu.Close();
+		return false;
+	}
+
+	return true;
+}
+
+bool IOBus::QueryData()
+{
+	mdk::Socket &cpu = IOBus::s_connectPool.GetSocket( m_hash );
+	char msg[1024];
+	MSG_HEADER *pHeader = (MSG_HEADER*)msg;
+	exist::DATA_KEY *pKey = (exist::DATA_KEY*)&msg[sizeof(MSG_HEADER)];
+	pHeader->msgId = MsgId::readData;
+	pHeader->msgSize = sizeof(exist::DATA_KEY);
+	pKey->hashid = m_hash;
+	pKey->keySize = m_keySize;
+	pKey->type = m_type;
+	memcpy(pKey->key, m_key, pKey->keySize);
+	if ( 0 > cpu.Send(msg, sizeof(MSG_HEADER) + pHeader->msgSize) )
+	{
+		printf( "send close\n" );
+		mdk::mdk_assert(false);
+	}
+
+	return true;
+}
+
+bool IOBus::SeekMsg()
+{
+	mdk::Socket &cpu = IOBus::s_connectPool.GetSocket( m_hash );
+	char msg[1024];
+	MSG_HEADER *pHeader = (MSG_HEADER*)msg;
+	if ( 0 > cpu.Receive(msg, sizeof(MSG_HEADER)) )
+	{
+		cpu.Close();
+		return false;
+	}
+	int size;
+	while ( pHeader->msgSize > 0 )
+	{
+		if ( pHeader->msgSize > 1024 ) size = 1024;
+		else size = pHeader->msgSize;
+		pHeader->msgSize -= size;
+		if ( 0 > cpu.Receive(msg, size) )
+		{
+			cpu.Close();
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool IOBus::ReadData( void *pData, int &size )
+{
+	mdk::Socket &cpu = IOBus::s_connectPool.GetSocket( m_hash );
+	char msg[1024];
+	MSG_HEADER *pHeader = (MSG_HEADER*)msg;
+	if ( 0 > cpu.Receive(msg, sizeof(MSG_HEADER), true) )
+	{
+		cpu.Close();
+		return false;
+	}
+	if ( size < pHeader->msgSize ) 
+	{
+		size = pHeader->msgSize;
+		return false;
+	}
+	if ( 0 > cpu.Receive(msg, sizeof(MSG_HEADER)) )
+	{
+		cpu.Close();
+		return false;
+	}
+	if ( pHeader->msgSize < 0 ) 
+	{
+		return false;
+	}
+	if ( pHeader->msgSize == 0 ) 
+	{
+		memset( pData, 0, size );
+		size = 0;
+		return true;
+	}
+
+	if ( 0 > cpu.Receive(pData, pHeader->msgSize) )
+	{
+		cpu.Close();
+		return false;
+	}
+	size = pHeader->msgSize;
+
+	return true;
+}
+
+bool IOBus::WriteData( void *pData, int size, UpdateType::UpdateType updateType )
+{
+	mdk::Socket &cpu = IOBus::s_connectPool.GetSocket( m_hash );
+	char msg[1024];
+	MSG_HEADER *pHeader = (MSG_HEADER*)msg;
+	WRITE_DATA *pParam = (WRITE_DATA*)&msg[sizeof(MSG_HEADER)];
+	pHeader->msgId = MsgId::writeData;
+	pHeader->msgSize = sizeof(WRITE_DATA) + size;
+	pParam->key.hashid = m_hash;
+	pParam->key.keySize = m_keySize;
+	memcpy(pParam->key.key, m_key, pParam->key.keySize);
+	pParam->updateType = updateType;
+	pParam->key.type = m_type;
+	pParam->size = size;
+	if ( 0 > cpu.Send(msg, sizeof(MSG_HEADER) + sizeof(WRITE_DATA)) )
+	{
+		cpu.Close();
+		return false;
+	}
+	if ( 0 > cpu.Send(pData, size) )
+	{
+		cpu.Close();
+		return false;
+	}
 
 	return true;
 }
 
 bool IOBus::ReadData( int index, void *pData, int &size )
 {
-	printf( "IOBus::%s[%d]:Read %d byte data by index\n", m_key, index, size );
 	unsigned int hash = 0;
 	mdk::Socket &cpu = IOBus::s_connectPool.GetSocket( hash );
 
@@ -215,44 +342,9 @@ bool IOBus::ReadData( int index, void *pData, int &size )
 
 bool IOBus::WriteData( int index, void *pData, int size )
 {
-	printf( "IOBus::%s[%d]:Write %d byte data by index\n", m_key, index, size );
-	unsigned char *p = (unsigned char *)pData;
-	int i = 0;
-	printf( "data:" );
-	for ( ; i < size; i++ )
-	{
-		if ( 0 < i ) printf( ",");
-		printf( "%x", p[i] );
-	}
-	printf( "\n");
-
 	unsigned int hash = 0;
 	mdk::Socket &cpu = IOBus::s_connectPool.GetSocket( hash );
 
-	return true;
-}
-
-bool IOBus::ReadData( unsigned int hash, char *key, int keySize, void *pData, int &size )
-{
-	printf( "IOBus::%s[%s]:Read %d byte data by key\n", m_key, key, size );
-	return true;
-}
-
-bool IOBus::WriteData( unsigned int hash, char *key, int keySize, void *pData, int size )
-{
-	printf( "IOBus::%s[%s]:Write %d byte data by key\n", m_key, key, size );
-	unsigned char *p = (unsigned char *)pData;
-	int i = 0;
-	printf( "data:" );
-	for ( ; i < size; i++ )
-	{
-		if ( 0 < i ) printf( ",");
-		printf( "%x", p[i] );
-	}
-	printf( "\n");
-
-	mdk::Socket &cpu = IOBus::s_connectPool.GetSocket( hash );
-	
 	return true;
 }
 

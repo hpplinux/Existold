@@ -1,0 +1,58 @@
+《外存》本质上是一个内存级别的nosql。
+外存提出了“面向变量”的数据访问思想，让用户只见变量，不见接口，省去了繁琐的接口调用。
+以此实现了逻辑与数据分离的效果,一份单结点代码自动达到分布式效果。
+外存拥有卓越的性能，单1client时，对于非持久化数据达到3万/秒吞吐，对于持久化数据达到2万/秒吞吐
+client并发越多性能也就越高。
+
+目前提供了int8、uint8、uint64、float、double等基础类型变量的操作,后续将实现map vector类型变量操作。
+
+1.安装
+进入根目录,make编译
+编译
+bin下生成4个程序：Mother,SolidStateDrive,Exist,test
+lib下生成2个lib库：cpu.a mdk.a
+
+2.文件说明
+Mother的角色是主板，负责所有服务，客户程序之间联系定位
+SolidStateDrive的角色是固态硬盘，负责数据持久化，实际就是一个带有持久化功能的Exist
+Exist角色是外存,负责数据缓存，实际就是一个内存nosql
+test测试程序
+mdk.a一个开源网络引擎
+cpu.a外存提供的client接口库，依赖mdk，用户程序需要同时连接mdk.a与cpu.a
+
+3.使用说明，非分布式部署
+分布式部署参考配置说明
+3.1修改配置文件
+察看配置文件，将ip 端口设置好即可
+
+3.2启动/停止服务
+linux下
+./start.sh Mother 启动主板
+./start.sh SolidStateDrive 启动固态硬盘
+./start.sh Exist启动外存
+./kill.sh 杀死所有服务
+./kill.sh Mother杀死主板，其它同
+./list.sh 显示所有正在运行的服务
+
+windows上直接执行/杀死
+启动没有顺序要求
+
+服务启动后，用户程序就可以访问外存了
+
+4.用户程序访问
+1.修改配置文件cpu.cfg，配置自身ip，与主板IP端口
+提示：cpu.cfg文件应该与执行程序在同一目录下
+
+2.连接mdk.a cpu.a
+3.包含include/Exist/Exist.h
+4.首先调用Exist::PlugIn()插入主板，
+5.使用Exist::Float Exist::int8 Exist::uint64 SSD::Float SSD::int8 SSD::uint64等类型操作数据,
+具体代可参考test.cpp
+
+5.类型说明
+Exist::类型申明的数据是非持久化数据,这些数据只是保存在Exist上,当Exist重启后就会丢失,不需要配置SolidStateDrive
+SSD::类型申明的数据是持久化数据，这些数据都会通过SolidStateDrive写入硬盘上，必须配置至少1个SolidStateDrive并运行
+
+6.提示
+java php用户接口尚未实现,参考通信协议文档(待补充),直接发包访问外存服务.
+直接使用通信协议访问外存的朋友,请记得打开套接字的TCP_NODELAY设置,达到高吞吐

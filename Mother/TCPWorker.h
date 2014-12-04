@@ -5,8 +5,8 @@
 #ifndef TCPWORKER_H
 #define TCPWORKER_H
 
-#include "../Micro-Development-Kit/include/mdk/ConfigFile.h"
-#include "../Micro-Development-Kit/include/mdk/Logger.h"
+#include "mdk/ConfigFile.h"
+#include "mdk/Logger.h"
 #include "../common/BStructSvr.h"
 #include "../common/common.h"
 #include "../common/Protocol.h"
@@ -32,14 +32,14 @@ public:
 
 	virtual int Main();
 	virtual void OnInvalidMsg(mdk::STNetHost &host, ErrorType type, unsigned char *msg, unsigned short len);//非法报文
-	virtual void OnWork( mdk::STNetHost &host, bsp::BStruct &msg );
+	virtual void OnWork( mdk::STNetHost &host, MSG_HEADER *header, unsigned char *pData );
 	void OnCloseConnect(mdk::STNetHost &host);
 
 private:
 	bool ReadConfig();
 	//////////////////////////////////////////////////////////////////////////
 	//报文响应
-	bool OnPlugIn(mdk::STNetHost &host, bsp::BStruct &msg);//设备请求插入,报文正确返回true,否则返回false
+	bool OnPlugIn(mdk::STNetHost &host, MSG_HEADER *header, MSG_PLUG_IN_QUERY *pData);//设备请求插入,报文正确返回true,否则返回false
 
 	//////////////////////////////////////////////////////////////////////////
 	//通知设备

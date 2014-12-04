@@ -2,11 +2,12 @@
 #include "common.h"
 #include "Protocol.h"
 #include "mdk/Socket.h"
+#include "mdk/mapi.h"
 
 namespace Device
 {
 
-char* Descript( Device::Type::Type type )
+const char* Descript( Device::Type::Type type )
 {
 	if ( Device::Type::motherboard == type ) return "ASUS Z9PE-D8 WS 超强双芯片工作站主板";
 	if ( Device::Type::exist == type ) return "创星世纪(CtreaStar)外存条";
@@ -19,7 +20,7 @@ char* Descript( Device::Type::Type type )
 }
 
 //状态描述
-char* Descript(Device::Status::Status status)
+const char* Descript(Device::Status::Status status)
 {
 	if ( Device::Status::idle == status) return "idle";
 	else if ( Device::Status::loadData == status) return "loadData";
@@ -36,27 +37,60 @@ char* Descript(Device::Status::Status status)
 namespace Exist
 {
 
-void SendBStruct( mdk::Socket &recver, bsp::BStruct &msg )
+unsigned char* GetDataBuffer( unsigned char *msg )
 {
-	unsigned char *buf = msg.GetStream();
-	buf -= MSG_HEAD_SIZE;
-	bsp::itomem( buf, msg.GetSize(), MSG_HEAD_SIZE );
-	recver.Send( buf, MSG_HEAD_SIZE + msg.GetSize() );
+	return &msg[MSG_HEAD_SIZE];
 }
 
-int Recv( mdk::Socket &sender, bsp::BStruct &msg, unsigned char *buf )
+void SendMsg( mdk::Socket &recver, short msgId, unsigned char *data, short size )
 {
-	short len = sender.Receive( buf, sizeof(short), true );
-	if ( mdk::Socket::seError == len || mdk::Socket::seSocketClose == len ) return 1;//与主板失去链接
-	len = bsp::memtoi( buf, sizeof(short) );
-	len += sizeof(short);
-	if ( len > MAX_BSTRUCT_SIZE ) return 2;//主板发送信号超长
-	len = sender.Receive( buf, len );
-	if ( mdk::Socket::seError == len || mdk::Socket::seSocketClose == len ) return 1;//与主板失去链接
-	if ( !msg.Resolve( &buf[sizeof(short)], len - sizeof(short) ) ) return 3;//主板发送非法信号
-	if ( !msg["MsgId"].IsValid() || sizeof(unsigned short) != msg["MsgId"].m_size ) return 4;//检查有无MsgId字段
-	
+	MSG_HEADER *header = (MSG_HEADER *)(data - sizeof(MSG_HEADER));
+	header->msgId = msgId;
+	header->msgSize = size;
+	recver.Send( header, MSG_HEAD_SIZE + header->msgSize );
+}
+
+#define MAX_RECV_SIZE 4096
+int Recv( mdk::Socket &sender, MSG_HEADER &header, unsigned char *buf )
+{
+	short len = sender.Receive( (unsigned char*)&header, MSG_HEAD_SIZE, true );
+	if ( mdk::Socket::seError == len || mdk::Socket::seSocketClose == len ) 
+	{
+		return 1;//与主板失去链接
+	}
+	if ( header.msgSize > MAX_DATA_SIZE ) 
+	{
+		return 2;//主板发送信号超长
+	}
+
+	unsigned short unreadSize = header.msgSize + MSG_HEAD_SIZE;
+	unsigned short readSize = 0;
+	unsigned short pos = 0;
+	while ( 0 < unreadSize )
+	{
+		readSize = unreadSize > MAX_RECV_SIZE?MAX_RECV_SIZE:unreadSize;
+		readSize = sender.Receive( &buf[pos], readSize );
+		if ( mdk::Socket::seError == readSize || mdk::Socket::seSocketClose == readSize ) 
+		{
+			return 1;//与主板失去链接
+		}
+		pos += readSize;
+		unreadSize -= readSize;
+	}
+
 	return 0;
 }
 
 }
+
+#ifdef WIN32
+#else
+mdk::uint64 GetTickCount()
+{
+	struct timespec ts;
+
+	clock_gettime(CLOCK_REALTIME, &ts);
+
+	return (ts.tv_sec * 1000 + ts.tv_nsec / 1000000);
+}
+#endif

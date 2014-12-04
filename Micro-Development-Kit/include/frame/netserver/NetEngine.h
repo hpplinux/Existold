@@ -126,7 +126,7 @@ protected:
 	virtual SOCKET ListenPort(int port);//监听一个端口,返回创建的套接字
 	//向某组连接广播消息(业务层接口)
 	void BroadcastMsg( int *recvGroupIDs, int recvCount, char *msg, unsigned int msgsize, int *filterGroupIDs, int filterCount );
-	void SendMsg( int hostID, char *msg, unsigned int msgsize );//向某主机发送消息(业务层接口)
+	bool SendMsg( int64 hostID, char *msg, unsigned int msgsize );//向某主机发送消息(业务层接口)
 private:
 	//主线程
 	void* RemoteCall Main(void*);
@@ -174,6 +174,11 @@ public:
 	void SetIOThreadCount(int nCount);
 	//设置工作线程数
 	void SetWorkThreadCount(int nCount);
+	//设置工作线程启动回调函数
+	void SetOnWorkStart( MethodPointer method, void *pObj, void *pParam );
+	void SetOnWorkStart( FuntionPointer fun, void *pParam );
+	//打开TCP_NODELAY
+	void OpenNoDelay();
 	/**
 	 * 开始
 	 * 成功返回true，失败返回false
@@ -197,6 +202,7 @@ public:
 	epoll_event *m_events;
 #endif
 	int64 m_nextConnectId;
+	bool m_noDelay;//开启TCP_NODELAY
 };
 
 }  // namespace mdk

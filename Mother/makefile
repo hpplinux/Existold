@@ -22,76 +22,109 @@ APXS = apxs
 #------------------------------------------编辑器End--------------------------------------------------------
 
 #------------------------------------------目录--------------------------------------------------------
+#常用目录
+#定义一些常用目录的宏，后面可以使用
+#※末尾不能有空格
+#范例：
+#ROOT_DIR=../../../..
+Root_dir=..
+Mdk_dir=$(Root_dir)/Micro-Development-Kit
 
-#依赖目标/文件查找目录
-VPATH = $(OBJ_OUTPUT_DIR) $(H_DIR) $(H_CPP)
-MDK_HOME = ../Micro-Development-Kit
-BSTRUCT_HOME = ../bstruct
-PROTOCOL = ../protocl
+#依赖文件全局查找目录
+VPATH = $(OBJ_OUTPUT_DIR) $(SRC_DIR) 
+SRC_DIR = 
+
+#源文件目录
+#每个目录定义一个宏，全部添加到SRC_DIR中
+#※末尾不能有空格
+#范例：
+#Main_Dir=$(ROOT_DIR)/main
+Main_dir=$(Root_dir)/Mother
+Common_dir=$(Root_dir)/common
 
 #输出目录
 OBJ_OUTPUT_DIR=./output
-OUTPUT_DIR=./bin
+OUTPUT_DIR=../bin
 $(shell mkdir $(OBJ_OUTPUT_DIR))
 $(shell mkdir $(OUTPUT_DIR))
 
-#.cpp目录
-CPP_DIR= $(PROTOCOL)
 
-#.h目录
-H_DIR= $(PROTOCOL)
 
 #------------------------------------------目录End--------------------------------------------------------
 
 #------------------------------------------编译选项--------------------------------------------------------
 
-#SO文件编译选项
-CFLAGS= -O -g -fPIC -Wall -D_REENTRANT -DUSE_APACHE -DNO_STRING_CIPHER $(CPU) 
+#编译选项
+CFLAGS= -O -g -fPIC -Wall -D_REENTRANT -DNO_STRING_CIPHER $(CPU) 
 
 #警告级别
 WARNING_LEVEL += -O3 
 
 #头文件目录：-I 目录
-INCLUDE = -I. -I../include -I$(MDK_HOME)/include -I$(BSTRUCT_HOME)/include 
+INCLUDE = -I. -I../include 
+#按照以下格式添加
+#INCLUDE += -I目录+空格 
+INCLUDE += -I$(Mdk_dir)/include 
+
 
 #库目录，库文件:-L 目录 -库名
-#SYSLIB = -lnsl -lc -lm -lpthread -lstdc++ 
-LIB = -lnsl -lc -lm -lpthread -lstdc++ 
+#LIB = -lnsl -lc -lm -lpthread -lstdc++ -lrt 
+LIB = -lnsl -lc -lm -lpthread -lstdc++ -lrt 
 
 #静态库：.a文件路径名
-LIB += $(MDK_HOME)/lib/mdk.a $(BSTRUCT_HOME)/lib/bstruct.a 
-
+#按照以下格式添加
+#LIB += .a文件路径名+空格
+LIB += $(Mdk_dir)/lib/mdk.a 
 
 #------------------------------------------编译选项End--------------------------------------------------------
-
-#项目入口主文件
-MAIN =
-
 
 
 #------------------------------------------输出--------------------------------------------------------
 #编译产生的程序文件名
-OUTPUT = Guide
+OUTPUT = Mother
 
 #目标文件
-OBJ_PRO = $(notdir $(patsubst %.cpp,%.o,$(wildcard *.cpp))) 
-OBJ_PROTOCOL = $(notdir $(patsubst %.cpp,%.o,$(wildcard $(PROTOCOL)/*.cpp))) 
+#范例
+#目标文件列表 = $(notdir $(patsubst %.cpp,%.o,$(wildcard [cpp源文件目录]/*.cpp))) 
+#cpp分布在多少个目录中,就定义多少个[目标文件列表]
+#范例：
+#OBJ列表1 = $(notdir $(patsubst %.cpp,%.o,$(wildcard mdk目录/source/mdk/*.cpp))) 
+#OBJ列表2 = $(notdir $(patsubst %.cpp,%.o,$(wildcard mdk目录/source/frame/netserver/*.cpp))) 
+#OBJ列表2 = $(notdir $(patsubst %.cpp,%.o,$(wildcard mdk目录/source/frame/netserver/*.cpp))) 
+Main_obj = $(notdir $(patsubst %.cpp,%.o,$(wildcard $(Main_dir)/*.cpp))) 
+Common_obj = $(notdir $(patsubst %.cpp,%.o,$(wildcard $(Common_dir)/*.cpp))) 
 
 
 #依赖的目标文件
-DEPENDENCE = $(OBJ_PRO) $(OBJ_PROTOCOL) 
+DEPENDENCE = 
+#将目标文件中定义的列表宏全部添加到DEPENDENCE中，每个项目都并以空格结束
+#范例：
+#DEPENDENCE += $(OBJ列表1) 
+DEPENDENCE += $(Mdk_dir)/lib/mdk.a 
+DEPENDENCE += $(Main_obj) 
+DEPENDENCE += $(Common_obj) 
+DEPENDENCE += ExistType.o 
+
 
 #连接项目，需要的所有其它源文件或目标文件(带目录)
-OBJ = $(addprefix $(OBJ_OUTPUT_DIR)/, $(OBJ_PRO)) $(addprefix $(OBJ_OUTPUT_DIR)/, $(OBJ_PROTOCOL)) 
+OBJ = 
+#将目标文件中定义的列表宏，按照如下格式的指令，全部添加到OBJ中，每个项目都以空格结束
+#指令：$(addprefix $(OBJ_OUTPUT_DIR)/, $(OBJ列表)) 
+#范例：
+#OBJ += $(addprefix $(OBJ_OUTPUT_DIR)/, $(OBJ列表1)) 
+#OBJ += $(addprefix $(OBJ_OUTPUT_DIR)/, $(OBJ列表2)) 
+OBJ += $(addprefix $(OBJ_OUTPUT_DIR)/, $(Main_obj)) 
+OBJ += $(addprefix $(OBJ_OUTPUT_DIR)/, $(Common_obj)) 
+OBJ += $(addprefix $(OBJ_OUTPUT_DIR)/, ExistType.o) 
 
 #------------------------------------------输出End--------------------------------------------------------
 
 #-------------------------------------------编译指令-----------------------------------------------------
 #生成EXE
 #范例：
-#$(OUTPUT_DIR)/$(OUTPUT): $(MAIN)$(DEPENDENCE)										依赖关系
+#$(OUTPUT_DIR)/$(OUTPUT): $(DEPENDENCE)										依赖关系
 #	@echo "Complie (OUTPUT_DIR)/$(OUTPUT)"
-#	$(CC) -o $@ $(CFLAGS)$(WARNING_LEVEL)$(INCLUDE)$(MAIN)$(OBJ)$(LIB)		gcc编译指令
+#	$(CC) -o $@ $(CFLAGS)$(WARNING_LEVEL)$(INCLUDE)$(OBJ)$(LIB)		gcc编译指令
 #	@echo ""
 #	@echo "$(OUTPUT_DIR)/$(OUTPUT) complie finished"
 #	@echo ""
@@ -99,10 +132,9 @@ OBJ = $(addprefix $(OBJ_OUTPUT_DIR)/, $(OBJ_PRO)) $(addprefix $(OBJ_OUTPUT_DIR)/
 #	@echo ""
 #	@echo ""
 
-$(OUTPUT_DIR)/$(OUTPUT):$(MAIN)$(DEPENDENCE)
+$(OUTPUT_DIR)/$(OUTPUT): $(DEPENDENCE)
 	@echo "Complie (OUTPUT_DIR)/$(OUTPUT)"
-	@echo ""
-	$(CC) -o $@ $(CFLAGS)$(WARNING_LEVEL)$(INCLUDE)$(MAIN)$(OBJ)$(LIB)
+	$(CC) -o $@ $(CFLAGS)$(WARNING_LEVEL)$(INCLUDE)$(OBJ)$(LIB)
 	@echo ""
 	@echo "$(OUTPUT_DIR)/$(OUTPUT) complie finished"
 	@echo ""
@@ -110,8 +142,10 @@ $(OUTPUT_DIR)/$(OUTPUT):$(MAIN)$(DEPENDENCE)
 	@echo ""
 	@echo ""
 
+
+
 #-----------------------------------------编译生成.A静态库---------------------------------------------------
-#$(OUTPUT_DIR)/$(OUTPUT):$(MAIN)$(DEPENDENCE)
+#$(OUTPUT_DIR)/$(OUTPUT):$(DEPENDENCE)
 #	@echo "Complie $(OUTPUT_DIR)/$(OUTPUT)"
 #	@echo ""
 #	ar -r $@ $(OBJ)
@@ -136,20 +170,20 @@ $(OUTPUT_DIR)/$(OUTPUT):$(MAIN)$(DEPENDENCE)
 
 
 #------------------------------------------编译Object----------------------------------------------------
-#范例：单个object编译
+#范例：单个cpp编译为object编译
 #$(OBJ_OUTPUT_DIR)/GameSerFrm.o: main/GameSerFrm.cpp main/GameSerFrm.h main/GameSerCPU.h com/ComDef.h com/XXSocket.h tool/DBTool.h	依赖关系
 #	@echo "Complie GameSerFrm.o"
-#	$(CC) -c -o $*.o $(CFLAGS)$(WARNING_LEVEL)$(INCLUDE)main/GameSerFrm.cpp											gcc编译指令
+#	$(CC) -c -o $(OBJ_OUTPUT_DIR)/$*.o $(CFLAGS)$(WARNING_LEVEL)$(INCLUDE)main/GameSerFrm.cpp											gcc编译指令
 #	@echo ""
 #	@echo "$(OBJ_OUTPUT_DIR)/GameSerFrm.o complie finished"
 #	@echo ""
 #	@echo ""
 
-#范例：批量object编译
-#$(OBJ_PRO):%.o:%.cpp %.h
+#范例：目录批量编译，所有cpp目录下的cpp生成object
+#$(OBJ列表1):%.o:[OBJ列表1的cpp源文件目录]/%.cpp [OBJ列表1的cpp源文件目录]/%.h
 #	@echo "Complie $(OBJ_OUTPUT_DIR)/$*.o"
 #	@echo ""
-#	$(CC) -c -o $(OBJ_OUTPUT_DIR)/$*.o $(CFLAGS)$(WARNING_LEVEL)$(INCLUDE) $*.cpp
+#	$(CC) -c -o $(OBJ_OUTPUT_DIR)/$*.o $(CFLAGS)$(WARNING_LEVEL)$(INCLUDE) [OBJ列表1的cpp源文件目录]/$*.cpp
 #	@echo ""
 #	@echo "$(OBJ_OUTPUT_DIR)/$*.o complie finished"
 #	@echo ""
@@ -157,11 +191,21 @@ $(OUTPUT_DIR)/$(OUTPUT):$(MAIN)$(DEPENDENCE)
 #	@echo ""
 #	@echo ""
 
+#$(OBJ列表2):%.o:[OBJ列表2的cpp源文件目录]/%.cpp [OBJ列表2的cpp源文件目录]/%.h
+#	@echo "Complie $(OBJ_OUTPUT_DIR)/$*.o"
+#	@echo ""
+#	$(CC) -c -o $(OBJ_OUTPUT_DIR)/$*.o $(CFLAGS)$(WARNING_LEVEL)$(INCLUDE) [OBJ列表2的cpp源文件目录]/$*.cpp
+#	@echo ""
+#	@echo "$(OBJ_OUTPUT_DIR)/$*.o complie finished"
+#	@echo ""
+#	@echo ""
+#	@echo ""
+#	@echo ""
 
-$(OBJ_PRO):%.o:%.cpp %.h
+$(Main_obj):%.o:$(Main_dir)/%.cpp $(Main_dir)/%.h
 	@echo "Complie $(OBJ_OUTPUT_DIR)/$*.o"
 	@echo ""
-	$(CC) -c -o $(OBJ_OUTPUT_DIR)/$*.o $(CFLAGS)$(WARNING_LEVEL)$(INCLUDE) $*.cpp
+	$(CC) -c -o $(OBJ_OUTPUT_DIR)/$*.o $(CFLAGS)$(WARNING_LEVEL)$(INCLUDE)$(Main_dir)/$*.cpp
 	@echo ""
 	@echo "$(OBJ_OUTPUT_DIR)/$*.o complie finished"
 	@echo ""
@@ -169,10 +213,10 @@ $(OBJ_PRO):%.o:%.cpp %.h
 	@echo ""
 	@echo ""
 
-$(OBJ_PROTOCOL):%.o:%.cpp %.h
+$(Common_obj):%.o:$(Common_dir)/%.cpp $(Common_dir)/%.h
 	@echo "Complie $(OBJ_OUTPUT_DIR)/$*.o"
 	@echo ""
-	$(CC) -c -o $(OBJ_OUTPUT_DIR)/$*.o $(CFLAGS)$(WARNING_LEVEL)$(INCLUDE) $(PROTOCOL)/$*.cpp
+	$(CC) -c -o $(OBJ_OUTPUT_DIR)/$*.o $(CFLAGS)$(WARNING_LEVEL)$(INCLUDE)$(Common_dir)/$*.cpp
 	@echo ""
 	@echo "$(OBJ_OUTPUT_DIR)/$*.o complie finished"
 	@echo ""
@@ -180,8 +224,17 @@ $(OBJ_PROTOCOL):%.o:%.cpp %.h
 	@echo ""
 	@echo ""
 
-
-
+ExistType.o:$(Root_dir)/CPU/source/frame/ExistType.cpp $(Root_dir)/include/Exist/frame/ExistType.h 
+	@echo "Complie $(OBJ_OUTPUT_DIR)/$*.o"
+	@echo ""
+	$(CC) -c -o $(OBJ_OUTPUT_DIR)/$*.o $(CFLAGS)$(WARNING_LEVEL)$(INCLUDE)$(Root_dir)/CPU/source/frame/ExistType.cpp
+	@echo ""
+	@echo "$(OBJ_OUTPUT_DIR)/$*.o complie finished"
+	@echo ""
+	@echo ""
+	@echo ""
+	@echo ""
+	
 
 install:
 #------------------------------------------安装----------------------------------------------------
@@ -197,6 +250,7 @@ install:
 #------------------------------------------清理重新编译----------------------------------------------------
 clean:
 	-rm -f $(OUTPUT_DIR)/$(OUTPUT) $(OBJ_OUTPUT_DIR)/*.o
+
 	
 .PHONY: clean
 
