@@ -1,5 +1,47 @@
-V1.0(2014-12-04 11:54)
+V1.0(2014-12-04 18:04)
 完成一套Nosql功能
 目前提供了int8、uint8、uint64、float、double等基础类型变量的操作,后续将实现map vector类型变量操作。
 
 
+应用场景对比
+服务上有3段逻辑，用户登录时，用户发表文章时，用户发表评论时，要提升用户等级
+传统数据库接口方式
+申明数据连接 db;
+db.connect();
+OnLogin()
+{
+	申明变量 level
+	get(表名，"level"， level);
+	level++;
+	set(表名，"level", level);
+}
+OnSend()
+{
+	申明变量 level
+	get(表名，"level"， level);
+	level++
+	set(表名，"level", level);
+}
+OnReply()
+{
+	申明变量 level
+	get(表名，"level"， level);
+	level++
+	set(表名，"level", level);
+}
+
+面向变量的访问方式
+Exist::int32 m_var("level");//申明变量 
+OnLogin()
+{
+   var++;//数据已经在外存服务器上修改，下次访问将在新值基础上
+}
+OnSend()
+{
+   var++;//数据已经在外存服务器上修改，下次访问将在新值基础上
+}
+OnReply()
+{
+   var++;//数据已经在外存服务器上修改，下次访问将在新值基础上
+}
+就这么简单
