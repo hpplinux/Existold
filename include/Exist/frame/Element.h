@@ -162,7 +162,9 @@ public:
 
 	T& operator/=(const T &right)
 	{
-		mdk::mdk_assert( 0.0 != right ); 
+		//VC++6.0不支持int 与0.0比较，故而先创建T类型对象初始化为0.0，然后T T比较
+		T zore = 0.0;
+		mdk::mdk_assert( zore != right ); 
 
 		m_data = right;
 		if ( SearchType::stKey == m_searchType ) 

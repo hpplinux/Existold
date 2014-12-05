@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
 			}
 		}
 		mdk::uint64 useTime = GetTickCount() - start;
-		printf( "10万次写入+30万次查询耗时：%llu毫秒，平均%f条请求/秒\n", useTime, (100000+300000)*1000.0/useTime );
+		printf( "10万次写入+30万次查询耗时：%llu毫秒，平均%f条请求/秒\n", useTime, (100000+300000)*1000/useTime );
 	}
 
 	{//测试50万次写入+70万次查询
@@ -134,7 +134,7 @@ int main(int argc, char* argv[])
 			checkData = data;//第7条读请求
 		}
 		mdk::uint64 useTime = GetTickCount() - start;
-		printf( "50万次写入+70万次查询耗时：%llu毫秒，平均%f条请求/秒\n", useTime, (700000+500000)*1000.0/useTime );
+		printf( "50万次写入+70万次查询耗时：%llu毫秒，平均%f条请求/秒\n", useTime, (700000+500000)*1000/useTime );
 	}
 
 	printf( "测试程序完成，退出测试\n" );

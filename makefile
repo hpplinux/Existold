@@ -21,6 +21,9 @@ CPU_dir=./CPU
 Client_dir=./Client
 
 all: 
+	@echo "Create bin dir"
+	tar -zxvpf bin.tar.gz
+	rm -f bin.tar.gz
 	@echo "Complie mdk"
 	(make -C $(MDK_dir)/mdk_static -w)
 	cp $(MDK_dir)/lib/mdk.a $(Output_lib_dir)/mdk.a
